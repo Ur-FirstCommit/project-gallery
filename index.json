@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "projects": [
+    "projects/orbit-classroom.md",
+    "projects/sign-sense.md",
+    "projects/shelter-link.md",
+    "projects/bloom-console.md",
+    "projects/circuit-quest.md",
+    "projects/study-current.md"
+  ],
+  "events": [
+    "events/beginners-paradise-2026.md",
+    "events/build-weekend-2026.md",
+    "events/launchpad-2025.md"
+  ],
+  "creators": [
+    "creators/mayacodes.md",
+    "creators/noahbuilds.md",
+    "creators/aminaj.md",
+    "creators/leomakes.md",
+    "creators/sanakhan.md",
+    "creators/oliverreed.md"
+  ]
+}

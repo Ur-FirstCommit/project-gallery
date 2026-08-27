@@ -1,10 +1,12 @@
 (function () {
   'use strict';
 
-  const { projects, events, creators } = window.FirstCommitData;
   const main = document.querySelector('#main-content');
   const header = document.querySelector('#site-header');
   const footer = document.querySelector('#site-footer');
+  let projects = [];
+  let events = [];
+  let creators = [];
   const categories = ['Web', 'Mobile', 'Desktop', 'Games', 'Hardware', 'AI', 'Other'];
 
   const byId = (items, id) => items.find((item) => item.id === id);
@@ -14,6 +16,54 @@
   const dateLabel = (date) => new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' }).format(new Date(`${date}T12:00:00`));
   const countBuilders = () => new Set(projects.flatMap((project) => project.creators)).size;
   const routeFromLocation = () => new URLSearchParams(window.location.search).get('route') || window.location.pathname;
+
+  function parseFrontMatter(source) {
+    const match = source.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
+    if (!match) throw new Error('Missing front matter');
+    const fields = {};
+    match[1].split('\n').forEach((line) => {
+      const separator = line.indexOf(':');
+      if (separator < 1) return;
+      const key = line.slice(0, separator).trim();
+      const value = line.slice(separator + 1).trim();
+      fields[key] = value === 'true' ? true : value === 'false' ? false : value;
+    });
+    return { fields, body: match[2].trim() };
+  }
+  function markdownSections(body, level) {
+    const expression = new RegExp(`^${'#'.repeat(level)}\\s+(.+?)\\s*$`, 'gm');
+    const headings = [...body.matchAll(expression)];
+    return headings.map((heading, index) => ({ title: heading[1].trim(), content: body.slice(heading.index + heading[0].length, headings[index + 1] ? headings[index + 1].index : body.length).trim() }));
+  }
+  function list(value) { return value ? value.split(',').map((item) => item.trim()).filter(Boolean) : []; }
+  function projectFromMarkdown(source) {
+    const { fields, body } = parseFrontMatter(source);
+    const sections = Object.fromEntries(markdownSections(body, 2).map((section) => [section.title.toLowerCase(), section.content]));
+    const story = markdownSections(sections['build story'] || '', 3).map((item, index) => {
+      const [title, date, type] = item.title.split('|').map((part) => part.trim());
+      return { id: `${fields.id}-milestone-${index + 1}`, title, date, type: type || 'feature', description: item.content };
+    });
+    const telemetry = (sections['development telemetry'] || '').split('\n').filter((line) => line.startsWith('- ')).map((line) => {
+      const [label, ...value] = line.slice(2).split(':'); return { label: label.trim(), value: value.join(':').trim() };
+    });
+    const challenges = markdownSections(sections.challenges || '', 3).map((item) => {
+      const [challenge, solution = ''] = item.content.split(/^How I solved it:\s*/m);
+      return { challenge: item.title, solution: solution.trim() || challenge.trim() };
+    });
+    const aiContent = sections['ai usage'];
+    const aiMatch = aiContent && aiContent.match(/^Categories:\s*(.*)\n?([\s\S]*)$/);
+    return { ...fields, technologies: list(fields.technologies), creators: list(fields.creators), images: list(fields.images), buildStory: story, telemetry, whatILearned: sections['what i learned'] || '', challenges, aiUsage: aiMatch ? { categories: list(aiMatch[1]), summary: aiMatch[2].trim() } : null, longDescription: sections.overview || fields.description };
+  }
+  function eventFromMarkdown(source) { return parseFrontMatter(source).fields; }
+  function creatorFromMarkdown(source) { const { fields, body } = parseFrontMatter(source); const bio = markdownSections(body, 2).find((section) => section.title.toLowerCase() === 'bio'); return { ...fields, bio: bio ? bio.content : '' }; }
+  async function loadArchive() {
+    const response = await fetch('index.json');
+    if (!response.ok) throw new Error('Archive index unavailable');
+    const index = await response.json();
+    const load = async (paths, transform) => Promise.all(paths.map(async (path) => { const file = await fetch(path); if (!file.ok) throw new Error(`Could not load ${path}`); return transform(await file.text()); }));
+    const [loadedProjects, loadedEvents, loadedCreators] = await Promise.all([load(index.projects || [], projectFromMarkdown), load(index.events || [], eventFromMarkdown), load(index.creators || [], creatorFromMarkdown)]);
+    return { projects: loadedProjects, events: loadedEvents, creators: loadedCreators };
+  }
 
   function projectUrl(project) { return `/projects/${project.slug}`; }
   function eventUrl(event) { return `/events/${event.slug}`; }
@@ -136,7 +186,24 @@
     bindCommon(); bindExplorer();
     if (scroll !== false) window.scrollTo({ top: 0, behavior: 'auto' });
   }
+  function loadingState() { return `<section class="loading-state page-width" aria-live="polite"><span class="eyebrow"><span></span> ARCHIVE TELEMETRY</span><h1>Loading mission <em>archive.</em></h1><p>Synchronising projects, events, and builder records.</p></section>`; }
+  function archiveError() { return `<section class="not-found page-width"><span class="not-found__signal">// ARCHIVE ERROR</span><h1>Mission archive <em>unavailable.</em></h1><p>We couldn't load the project records right now. Please refresh or return to the archive later.</p><a class="button" href="/projects" data-link>Return to projects <span>→</span></a></section>`; }
   window.addEventListener('popstate', render);
   window.addEventListener('keydown', (event) => { if (event.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) { event.preventDefault(); document.querySelector('#project-search')?.focus(); } });
-  render();
+  (async function boot() {
+    header.innerHTML = headerMarkup();
+    footer.innerHTML = footerMarkup();
+    main.innerHTML = loadingState();
+    bindCommon();
+    try {
+      const archive = await loadArchive();
+      projects = archive.projects;
+      events = archive.events;
+      creators = archive.creators;
+      render();
+    } catch (error) {
+      main.innerHTML = archiveError();
+      bindCommon();
+    }
+  }());
 }());
