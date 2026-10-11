@@ -2,22 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="FirstCommit Projects Explorer — discover what the next generation is building." />
-    <meta name="theme-color" content="#070a14" />
-    <title>FirstCommit — Projects Explorer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="A considered collection of winning projects from FirstCommit Pro." />
+    <meta name="theme-color" content="#f8f7f3" />
+    <title>FirstCommit Pro — Winners Gallery</title>
+    <link rel="stylesheet" href="src/styles.css" />
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
-    <div class="site-shell">
-      <header class="site-header" id="site-header"></header>
-      <main id="main-content" tabindex="-1"></main>
-      <footer class="site-footer" id="site-footer"></footer>
-    </div>
-    <script src="js/app.js"></script>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="wordmark" href="#/" aria-label="FirstCommit Pro winners gallery home"><span class="wordmark-mark" aria-hidden="true">f.</span><span>FIRSTCOMMIT <b>PRO</b></span></a>
+        <nav aria-label="Main navigation"><a href="#projects">The winners</a><a href="#about">About the gallery</a></nav>
+      </div>
+    </header>
+    <main id="main" tabindex="-1" aria-live="polite">
+      <section class="loading-state" aria-label="Loading winners"><span class="eyebrow">FIRSTCOMMIT PRO / WINNERS</span><p>Gathering the projects…</p></section>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-inner"><a class="wordmark" href="#/" aria-label="FirstCommit Pro home"><span class="wordmark-mark" aria-hidden="true">f.</span><span>FIRSTCOMMIT <b>PRO</b></span></a><p>Made with intention. Built to be shared.</p><a class="footer-top" href="#main">Back to top ↑</a></div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/lib/marked.umd.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" crossorigin="anonymous"></script>
+    <script type="module" src="src/main.js"></script>
   </body>
 </html>
