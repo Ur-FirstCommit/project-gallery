@@ -1,3 +1,5 @@
 {
-  "projects": []
+  "projects": [
+    "_template.md"
+  ]
 }
