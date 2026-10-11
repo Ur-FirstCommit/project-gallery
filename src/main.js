@@ -25,10 +25,10 @@ function coverMarkup(project, detail = false) {
   return `<div class="project-cover${detail ? ' project-cover--detail' : ''}" aria-label="${project.cover ? `${escapeHtml(project.title)} cover image` : 'Project cover image not provided'}"><div class="cover-placeholder" aria-hidden="true"><span>FC<span class="cover-dot">.</span></span></div>${cover}</div>`;
 }
 
-function projectCard(project) {
-  const facts = [project.event, project.year].filter(Boolean).map(escapeHtml).join(' <span aria-hidden="true">·</span> ');
+function projectCard(project, lead = false) {
+  const facts = [project.event, project.year].filter(Boolean).map(escapeHtml).join(' / ');
   const tags = project.tags.slice(0, 3).map((tag) => `<span class="card-tag">${escapeHtml(tag)}</span>`).join('');
-  return `<a class="project-card" href="#/project/${encodeURIComponent(project.slug)}" data-route aria-label="View ${escapeHtml(project.title)}, ${escapeHtml(awardLabel(project))}">
+  return `<a class="project-card${lead ? ' project-card--lead' : ''}" href="#/project/${encodeURIComponent(project.slug)}" data-route aria-label="View ${escapeHtml(project.title)}, ${escapeHtml(awardLabel(project))}">
     ${coverMarkup(project)}
     <div class="card-content"><div class="card-award"><span class="award-star" aria-hidden="true">✳</span>${escapeHtml(awardLabel(project))}${project.place ? `<span class="placement">${escapeHtml(ordinal(project.place))}</span>` : ''}</div>
       <h3>${escapeHtml(project.title)}</h3><p class="card-summary">${escapeHtml(project.summary)}</p>
@@ -103,7 +103,7 @@ function renderResults() {
   const result = document.querySelector('#project-results');
   if (!result) return;
   result.innerHTML = visible.length
-    ? visible.map(projectCard).join('')
+    ? visible.map((project, index) => projectCard(project, filters.sort === 'ranking' && index === 0)).join('')
     : `<div class="empty-state"><span class="empty-mark" aria-hidden="true">∅</span><h3>No projects found</h3><p>Try another search or clear your filters to see the full collection.</p><button class="text-button" id="empty-clear" type="button">Clear search and filters <span aria-hidden="true">↗</span></button></div>`;
   result.querySelector('#empty-clear')?.addEventListener('click', clearFilters);
   const count = document.querySelector('#result-count');
@@ -115,11 +115,11 @@ function renderResults() {
 function galleryMarkup() {
   const filters = currentFilters();
   const content = projects.length
-    ? `<div class="gallery-heading"><div><span class="eyebrow">A FEW IDEAS, TAKEN FURTHER</span><h2 id="projects">The winners<span class="heading-period">.</span></h2></div><span class="result-count" id="result-count"></span></div>${controlsMarkup(filters)}<div class="project-grid" id="project-results"></div>`
-    : `<div class="empty-gallery"><span class="eyebrow">THE NEXT CHAPTER STARTS HERE</span><h2 id="projects">A place for the<br>next big idea<span class="heading-period">.</span></h2><p>Winning projects will find their place in this gallery soon. Check back as the FirstCommit Pro collection grows.</p></div>`;
-  app.innerHTML = `<section class="hero"><div class="hero-inner"><div class="hero-copy"><span class="eyebrow"><span class="hero-mark" aria-hidden="true">✳</span> THE FIRSTCOMMIT PRO WINNERS GALLERY</span><h1>Good ideas<br>deserve a <em>spotlight.</em></h1><p class="hero-intro">A considered collection of projects made by people who turned a first commit into something worth sharing.</p><a class="hero-link" href="#projects">Explore the winners <span aria-hidden="true">↓</span></a></div><div class="hero-note" aria-label="A showcase of awarded work"><div class="note-rule"></div><span class="note-index">AN OPEN COLLECTION</span><p>Curiosity, craft,<br>and the courage<br>to begin.</p><span class="note-stamp" aria-hidden="true">FC<br>PRO</span></div></div></section>
+    ? `<div class="gallery-heading"><div><span class="section-kicker">The FirstCommit Pro collection</span><h2 id="projects">Winning projects</h2></div><span class="result-count" id="result-count"></span></div>${controlsMarkup(filters)}<div class="project-grid" id="project-results"></div>`
+    : `<div class="empty-gallery"><span class="section-kicker">A collection in progress</span><h2 id="projects">The next great project<br>starts somewhere.</h2><p>Confirmed winning projects will appear here as the FirstCommit Pro collection grows.</p></div>`;
+  app.innerHTML = `<section class="hero"><div class="hero-inner"><div class="hero-copy"><p class="hero-context">A FirstCommit Pro showcase</p><h1>More than a<br>first commit.</h1><p class="hero-intro">Meet the FirstCommit Pro winners: projects made by people who kept building, testing, and sharing.</p><a class="hero-link" href="#projects">Browse winning projects</a></div><div class="hero-emblem" aria-hidden="true"><div class="emblem-disc"><span>FC</span></div><div class="emblem-ribbon">FirstCommit Pro</div><p class="emblem-caption">Recognising the work behind the idea</p></div></div></section>
     <section class="gallery-section" aria-label="Winning projects"><div class="section-inner">${content}</div></section>
-    <section class="about-section" id="about"><div class="about-inner"><span class="eyebrow">WHY WE KEEP THIS</span><p>Every project here began with a question, a sketch, or a first commit. This gallery celebrates the teams who brought their ideas to life—and gives the next builder something to imagine.</p><span class="about-signoff">FIRSTCOMMIT PRO <i aria-hidden="true">✳</i></span></div></section>`;
+    <section class="about-section" id="about"><div class="about-inner"><span class="section-kicker">About the gallery</span><p>Every project begins with a first commit. This collection celebrates the people who kept going until their idea became something real.</p><span class="about-signoff">FirstCommit Pro <i aria-hidden="true">✳</i></span></div></section>`;
   renderResults();
   bindGalleryControls();
 }
@@ -129,7 +129,7 @@ function projectPage(project) {
     project.demo ? `<a class="action-link action-primary" href="${escapeHtml(project.demo)}" target="_blank" rel="noopener noreferrer">Visit live project <span aria-hidden="true">↗</span></a>` : '',
     project.github ? `<a class="action-link" href="${escapeHtml(project.github)}" target="_blank" rel="noopener noreferrer">Source on GitHub <span aria-hidden="true">↗</span></a>` : '',
   ].filter(Boolean).join('');
-  const meta = [project.event, project.year].filter(Boolean).map(escapeHtml).join(' <span aria-hidden="true">·</span> ');
+  const meta = [project.event, project.year].filter(Boolean).map(escapeHtml).join(' / ');
   let body;
   try {
     body = renderMarkdown(project.body);
@@ -171,7 +171,7 @@ function renderRoute() {
     window.scrollTo({ top: 0, behavior: 'auto' });
     return;
   }
-  app.innerHTML = `<section class="not-found"><span class="eyebrow">404 / NOT IN THIS COLLECTION</span><h1>We couldn't find<br>that project<span class="heading-period">.</span></h1><a class="action-link action-primary" href="#/" data-route>Return to the winners <span aria-hidden="true">↗</span></a></section>`;
+  app.innerHTML = `<section class="not-found"><p class="hero-context">Project not found</p><h1>We couldn't find<br>that project.</h1><a class="action-link action-primary" href="#/" data-route>Return to the collection <span aria-hidden="true">↗</span></a></section>`;
 }
 
 function navigate(href) {
@@ -271,7 +271,7 @@ async function loadProjects() {
     renderRoute();
   } catch (error) {
     console.error(`Could not load the FirstCommit Pro project index. ${error.message}`);
-    app.innerHTML = `<section class="load-error"><span class="eyebrow">THE GALLERY IS TAKING A MOMENT</span><h1>We couldn't load<br>the collection<span class="heading-period">.</span></h1><p>Please refresh in a little while. If you maintain this gallery, check <code>projects/index.json</code> and its Markdown filenames.</p><button class="text-button" type="button" id="retry-load">Try again <span aria-hidden="true">↗</span></button></section>`;
+    app.innerHTML = `<section class="load-error"><p class="hero-context">Gallery unavailable</p><h1>We couldn't load<br>the collection.</h1><p>Please refresh in a little while. If you maintain this gallery, check <code>projects/index.json</code> and its Markdown filenames.</p><button class="text-button" type="button" id="retry-load">Try again <span aria-hidden="true">↗</span></button></section>`;
     document.querySelector('#retry-load').addEventListener('click', loadProjects);
   }
 }

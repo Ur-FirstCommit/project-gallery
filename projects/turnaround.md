@@ -10,7 +10,7 @@ cover: "/projects/assets/project-cover.webp"
 demo: "https://turnaroundlogistics.vercel.app/"
 github: "https://github.com/acunetix2/Turnaround"
 tags:
-  - Developer Tools
+  - Logistic Tools
   - Open Source
 ---
 
@@ -32,8 +32,8 @@ Describe the process, tools, and decisions behind the project.
 
 ## Links
 
-- [Live demo](https://example.com)
-- [Source code](https://github.com/example/project)
+- [Live demo](https://turnaroundlogistics.vercel.app/)
+- [Source code](https://github.com/acunetix2/Turnaround)
 
 <!--
 Required metadata: title and summary.
